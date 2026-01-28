@@ -320,7 +320,9 @@ export function InvoicePdf(props: InvoicePdfProps) {
                             <Text style={[styles.daysCell, styles.colDay]}>{`Day ${idx + 1}`}</Text>
                             <Text style={[styles.daysCell, styles.colDate]}>{fmtDateISOToGB(d.date)}</Text>
                             <Text style={[styles.daysCell, styles.colHours]}>
-                                {calculationType === "hours" ? String(Number(d.hours) || 0) : "1"}
+                                {calculationType === "hours"
+                                    ? String(Number(d.hours) || 0)
+                                    : String(idx + 1)}
                             </Text>
                         </View>
                     ))}
