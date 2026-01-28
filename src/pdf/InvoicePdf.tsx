@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     strong: { fontWeight: 700 },
     muted: { color: COLORS.muted },
 
-    // Table
+    // Main Line Items Table
     table: {
         borderWidth: 1,
         borderColor: COLORS.light,
@@ -113,6 +113,42 @@ const styles = StyleSheet.create({
     colQty: { width: "15%", textAlign: "right" },
     colRate: { width: "15%", textAlign: "right" },
     colAmt: { width: "15%", textAlign: "right" },
+
+    // Days Table (Day 1, Day 2, ...)
+    sectionTitle: {
+        fontSize: 10,
+        fontWeight: 700,
+        marginTop: 4,
+        marginBottom: 6,
+        color: COLORS.ink,
+    },
+    daysTable: {
+        borderWidth: 1,
+        borderColor: COLORS.light,
+        borderRadius: 10,
+        overflow: "hidden",
+        marginTop: 4,
+        marginBottom: 12,
+    },
+    daysHead: {
+        flexDirection: "row",
+        backgroundColor: COLORS.lighter,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.light,
+    },
+    daysRow: {
+        flexDirection: "row",
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.light,
+    },
+    daysCell: {
+        paddingVertical: 7,
+        paddingHorizontal: 10,
+        fontSize: 9.5,
+    },
+    colDay: { width: "20%" },
+    colDate: { width: "55%" },
+    colHours: { width: "25%", textAlign: "right" },
 
     // Totals
     totalsWrap: { flexDirection: "row", justifyContent: "flex-end", marginBottom: 6 },
@@ -190,12 +226,16 @@ export function InvoicePdf(props: InvoicePdfProps) {
 
     const qty = calcQty(workDays, calculationType);
     const unitLabel = calculationType === "hours" ? "Hours" : "Days";
-    const serviceName = calculationType === "hours" ? "Labour services (hourly)" : "Labour services (daily)";
+    const serviceName =
+        calculationType === "hours" ? "Labour services (hourly)" : "Labour services (daily)";
 
     const workDatesRange =
         workDays.length > 0
             ? `${fmtDateISOToGB(workDays[0].date)} … ${fmtDateISOToGB(workDays[workDays.length - 1].date)}`
             : "-";
+
+    // Professional default: show days in chronological order
+    const sortedDays = [...workDays].sort((a, b) => a.date.localeCompare(b.date));
 
     return (
         <Document>
@@ -262,6 +302,28 @@ export function InvoicePdf(props: InvoicePdfProps) {
                         <Text style={[styles.td, styles.colRate]}>{fmtMoneyGBP(rate)}</Text>
                         <Text style={[styles.td, styles.colAmt]}>{fmtMoneyGBP(gross)}</Text>
                     </View>
+                </View>
+
+                {/* DAYS TABLE */}
+                <Text style={styles.sectionTitle}>Work Days</Text>
+                <View style={styles.daysTable}>
+                    <View style={styles.daysHead}>
+                        <Text style={[styles.th, styles.colDay]}>Day</Text>
+                        <Text style={[styles.th, styles.colDate]}>Date</Text>
+                        <Text style={[styles.th, styles.colHours]}>
+                            {calculationType === "hours" ? "Hours" : "Unit"}
+                        </Text>
+                    </View>
+
+                    {sortedDays.map((d, idx) => (
+                        <View key={`${d.date}-${idx}`} style={styles.daysRow}>
+                            <Text style={[styles.daysCell, styles.colDay]}>{`Day ${idx + 1}`}</Text>
+                            <Text style={[styles.daysCell, styles.colDate]}>{fmtDateISOToGB(d.date)}</Text>
+                            <Text style={[styles.daysCell, styles.colHours]}>
+                                {calculationType === "hours" ? String(Number(d.hours) || 0) : "1"}
+                            </Text>
+                        </View>
+                    ))}
                 </View>
 
                 {/* TOTALS */}
